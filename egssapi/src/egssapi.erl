@@ -363,7 +363,7 @@ set_index(Server_ref, Idx) when is_atom(Server_ref); is_pid(Server_ref) ->
 
 test() ->
     io:format("~p: test 1~n", [?MODULE]),
-    {ok, Server}=start_link("http.keytab"),
+    {ok, Server}=start_link("/etc/krb5.keytab"),
 
     io:format("~p: test 2~n", [?MODULE]),
     {ok, {Ctx, Data}}=init_sec_context(Server, "HTTP", gethostname(),<<>>),

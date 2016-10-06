@@ -266,8 +266,29 @@ calc_octets(Len, Octets) ->
     
 
 decode_oid(Data) when is_binary(Data) ->
-    {Oid_dec, Blob, _} = ?RT_BER:decode_object_identifier(Data, [], []),
+    {{6, Oid_octets}, Blob} = asn1rt_nif:decode_ber_tlv(Data),
+    Oid_dec = decode_oid_octets(binary_to_list(Oid_octets)),
     {Oid_dec, Blob}.
+
+decode_oid_octets(Octets) ->
+    [First|Rest] = dec_subidentifiers(Octets, 0, []),
+    Idlist = if
+                 First < 40 ->
+                     [0,First|Rest];
+                 First < 80 ->
+                     [1,First - 40|Rest];
+                 true ->
+                     [2,First - 80|Rest]
+             end,
+    list_to_tuple(Idlist).
+
+dec_subidentifiers([H|T], Av, Al) when H >=16#80 ->
+    dec_subidentifiers(T, (Av bsl 7) bor (H band 16#7F), Al);
+dec_subidentifiers([H|T], Av, Al) ->
+    dec_subidentifiers(T, 0, [(Av bsl 7) bor H|Al]);
+dec_subidentifiers([], _Av, Al) ->
+    lists:reverse(Al).
+
 
 encode_oid(Oid) when is_tuple(Oid) ->
     {Oid_list, _} = ?RT_BER:encode_object_identifier(Oid, []),
@@ -289,7 +310,7 @@ test() ->
     Data = <<1,2,3,4>>,
     {?OID_KRB5, Data} = decode_gssapi(encode_gssapi(?OID_KRB5, Data)),
 
-    {ok, Server} = egssapi:start_link("http.keytab"),
+    {ok, Server} = egssapi:start_link("/etc/krb5.keytab"),
     {ok, {Context2, Token2}}=init_sec_context(Server, krb5, "HTTP", gethostname()),
 %%     io:format("krb5: ~p~n", [Token2]),
     {ok, done} = delete_sec_context(Context2),
