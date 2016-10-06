@@ -1,0 +1,17 @@
+Source: erlang-egssapi
+Priority: optional
+Maintainer: Alexander Dutton <alexnader.dutton@it.ox.ac.uk>
+Build-Depends: debhelper (>= 9), dh-rebar, libkrb5-dev
+Standards-Version: 3.9.5
+Section: libs
+Homepage: https://github.com/ox-it/egssapi
+
+Package: erlang-egssapi
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, erlang-base | ${erlang-abi:Depends},
+         ${erlang:Depends}, libkrb5-3
+Description: GSSAPI library for Erlang
+ Erlang GSSAPI and SPNEGO API.
+ Generic Security Services Application Program Interface (GSSAPI) and
+ Simple and Protected GSSAPI Negotiation Mechanism (SPNEGO) support.
+
